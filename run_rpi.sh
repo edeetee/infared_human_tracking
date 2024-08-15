@@ -1,0 +1,1 @@
+DISPLAY=:0 poetry run python3 visualise_i2c.py

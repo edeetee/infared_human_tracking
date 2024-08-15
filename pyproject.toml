@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "infared-human-tracking"
+version = "0.1.0"
+description = ""
+authors = ["Edward <edeetee@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+colour = "^0.1.5"
+Adafruit-Blinka = "^8.47.0"
+numpy = "^2.0.1"
+pygame = "^2.6.0"
+scipy = "^1.14.0"
+adafruit-circuitpython-amg88xx = "^1.2.21"
+rpi-gpio = "^0.7.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
