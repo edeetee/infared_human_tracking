@@ -4,6 +4,7 @@
 """This example is for Raspberry Pi (Linux) only!
    It will not work on microcontrollers running CircuitPython!"""
 
+import codecs
 import os
 import math
 import time
@@ -18,6 +19,10 @@ from scipy.interpolate import griddata
 from colour import Color
 
 import adafruit_amg88xx
+
+import pickle
+import json
+
 
 i2c_bus = busio.I2C(board.SCL, board.SDA)
 
@@ -83,11 +88,14 @@ time.sleep(0.1)
 while True:
     # read the pixels
     pixels = []
-    print("PIXELS:", end=None)
+    # print(f"{sensor.pixels}")
+    pickled = json.dumps(sensor.pixels)
+    # pickled = pickle.dumps(sensor.pixels, 0)
+    print(pickled)
     for row in sensor.pixels:
         pixels = pixels + row
-        print(["{0:.1f}".format(temp) for temp in row], end=None)
-    print()
+        # print(["{0:.1f}".format(temp) for temp in row], end="")
+    # print()
     pixels = [map_value(p, MINTEMP, MAXTEMP, 0, COLORDEPTH - 1) for p in pixels]
 
     # perform interpolation
