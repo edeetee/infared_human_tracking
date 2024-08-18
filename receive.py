@@ -1,4 +1,6 @@
 import codecs
+from collections import deque
+import contextlib
 import os
 import subprocess
 from subprocess import Popen, PIPE
@@ -60,7 +62,6 @@ if args.install:
     # make sure rpi dependencies are installed
     subprocess.run(["ssh", HOST, f"cd {PATH}; ./setup_rpi.sh"])
 
-
 print("Running the script on the raspberry pi")
 p = subprocess.Popen(
     [
@@ -68,8 +69,8 @@ p = subprocess.Popen(
         HOST,
         f"cd {PATH}; $HOME/.local/bin/poetry run python3 print_ic2.py",
     ],
-    bufsize=1,
-    text=True,
+    bufsize=0,
+    # text=True,
     stdout=subprocess.PIPE,
 )
 
@@ -83,14 +84,20 @@ fig.canvas.mpl_connect("close_event", lambda x: exit(0))  # listen to close even
 
 MIN_TEMP = 0
 MAX_TEMP = 37.5
-MAX_VALUES = 100
+TRIGGER_TEMP = 15
+TRIGGER_FROM_MEAN = 3
+TRIGGER_FROM_MIN = 3
+MAX_VALUES = 50
 
 # Plot the grid using a colormap
-im = grid_ax.imshow([[0]], cmap="hot", vmin=MIN_TEMP, vmax=MAX_TEMP)
+im = grid_ax.imshow(
+    [[0]], cmap="hot", vmin=MIN_TEMP, vmax=MAX_TEMP, interpolation="bicubic"
+)
+im2 = grid_ax.imshow([[0]], interpolation="nearest")
+
 
 # Add a colorbar
 cbar = grid_ax.figure.colorbar(im, ax=grid_ax)
-
 
 stats_lines: list[Line2D] = []
 stats_labels = [
@@ -99,6 +106,8 @@ stats_labels = [
     "Median",
     "Weighted X",
     "Weighted Y",
+    "Min",
+    "Max",
 ]
 for i in range(len(stats_labels)):
     (line,) = stats_ax.plot([], [], label=stats_labels[i])
@@ -140,8 +149,44 @@ def weighted_center_of_mass(grid):
     return x_center, y_center
 
 
+newlines = ["\n", "\r\n", "\r"]
+
+
+def unbuffered(proc: Popen, stream="stdout"):
+    stream = getattr(proc, stream)
+    with contextlib.closing(stream):
+        while True:
+            out = []
+            last = stream.read(1)
+            # Don't loop forever
+            if last == "" and proc.poll() is not None:
+                break
+            while last not in newlines:
+                # Don't loop forever
+                if last == "" and proc.poll() is not None:
+                    break
+                out.append(last)
+                last = stream.read(1)
+            out = "".join(out)
+            yield out
+
+
+# os.set_blocking(p.stdout.fileno(), False)  # That's what you are looking for
+
 print("Starting to read the output")
-for l in p.stdout:
+d = b""
+while True:
+    # l = ""
+    # while p.stdout.readable():
+    #     while True:
+    #         b = p.stdout.read(1)
+    #         if b == b"\n":
+    #             break
+    #         d += b
+    #     l = d.decode("utf-8")
+    l = p.stdout.readline().decode("utf-8")
+
+    # l = deque(iter(p.stdout.readline, b"")).pop().decode
 
     try:
         data = json.loads(l)
@@ -158,23 +203,37 @@ for l in p.stdout:
         print()
 
     grid = np.array(data)
+    grid = np.rot90(grid, -1)
     im.set_data(grid)
 
     mean_intensity = np.mean(grid)
     std_dev = np.std(grid)
     median_intensity = np.median(grid)
     weighted_x, weighted_y = weighted_center_of_mass(grid)
+    min = np.min(grid)
+    max = np.max(grid)
+
+    # data_above_range = grid > (min + TRIGGER_FROM_MIN)
+    data_above_range = grid > (mean_intensity + TRIGGER_FROM_MEAN)
+
+    # full blue if true, transparent if false
+    data_above_range_color = np.zeros((*data_above_range.shape, 4))
+    data_above_range_color[data_above_range] = [0, 0, 1, 0.5]
+
+    im2.set_data(data_above_range_color)
 
     stats_data["Mean Intensity"].append(mean_intensity)
     stats_data["Standard Deviation"].append(std_dev)
     stats_data["Median"].append(median_intensity)
     stats_data["Weighted X"].append(weighted_x)
     stats_data["Weighted Y"].append(weighted_y)
+    stats_data["Min"].append(min)
+    stats_data["Max"].append(max)
     stats_time.append(time.time())
 
     for i, line in enumerate(stats_lines):
         data = np.array(stats_data[stats_labels[i]])
-        data = data / np.sqrt(np.sum(data**2))
+        # data = data / np.sqrt(np.sum(data**2))
         line.set_xdata(stats_time)
         line.set_ydata(data)
 
