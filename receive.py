@@ -177,7 +177,8 @@ def normalize(data: np.array) -> np.array:
 
 
 # os.set_blocking(p.stdout.fileno(), False)  # That's what you are looking for
-midi_out = mido.open_output("infared")
+output_names = mido.get_output_names()
+midi_out = mido.open_output(output_names[0])
 
 print("Starting to read the output")
 d = b""
@@ -227,11 +228,13 @@ while True:
     stats_data["Min"].append(min_temp)
     stats_data["Max"].append(max_temp)
 
+    n_x = normalize(np.array(stats_data["Weighted X"]))[-1]
+
     midi_out.send(
         mido.Message(
             "control_change",
             control=1,
-            value=int(min(0, max(0, weighted_x)) * 127),
+            value=int(max(0, min(1, n_x)) * 127),
         )
     )
 
