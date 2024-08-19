@@ -11,5 +11,5 @@
 ## Running
 
 - Make sure the RPI is connected to the same network as the host machine
-- Make sure you can connect to the rpi using ssh
+- Ensure you can connect to the RPI using ssh
 - Run .`/run_macos.sh`
