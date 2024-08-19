@@ -1,6 +1,7 @@
 import codecs
 from collections import deque
 import contextlib
+import math
 import os
 import subprocess
 from subprocess import Popen, PIPE
@@ -11,7 +12,7 @@ from matplotlib.lines import Line2D
 import numpy as np
 import scipy.misc as smp
 from sklearn.preprocessing import normalize
-
+import mido
 
 import matplotlib.pyplot as plt
 
@@ -63,7 +64,7 @@ if args.install:
     subprocess.run(["ssh", HOST, f"cd {PATH}; ./setup_rpi.sh"])
 
 print("Running the script on the raspberry pi")
-p = subprocess.Popen(
+process_on_rpi = subprocess.Popen(
     [
         "ssh",
         HOST,
@@ -171,22 +172,17 @@ def unbuffered(proc: Popen, stream="stdout"):
             yield out
 
 
+def normalize(data: np.array) -> np.array:
+    return data / np.sqrt(np.sum(data**2))
+
+
 # os.set_blocking(p.stdout.fileno(), False)  # That's what you are looking for
+midi_out = mido.open_output("infared")
 
 print("Starting to read the output")
 d = b""
 while True:
-    # l = ""
-    # while p.stdout.readable():
-    #     while True:
-    #         b = p.stdout.read(1)
-    #         if b == b"\n":
-    #             break
-    #         d += b
-    #     l = d.decode("utf-8")
-    l = p.stdout.readline().decode("utf-8")
-
-    # l = deque(iter(p.stdout.readline, b"")).pop().decode
+    l = process_on_rpi.stdout.readline().decode("utf-8")
 
     try:
         data = json.loads(l)
@@ -210,25 +206,35 @@ while True:
     std_dev = np.std(grid)
     median_intensity = np.median(grid)
     weighted_x, weighted_y = weighted_center_of_mass(grid)
-    min = np.min(grid)
-    max = np.max(grid)
+    min_temp = np.min(grid)
+    max_temp = np.max(grid)
 
     # data_above_range = grid > (min + TRIGGER_FROM_MIN)
     data_above_range = grid > (mean_intensity + TRIGGER_FROM_MEAN)
+
+    # VISUALISATION \/ \/
 
     # full blue if true, transparent if false
     data_above_range_color = np.zeros((*data_above_range.shape, 4))
     data_above_range_color[data_above_range] = [0, 0, 1, 0.5]
 
     im2.set_data(data_above_range_color)
-
     stats_data["Mean Intensity"].append(mean_intensity)
     stats_data["Standard Deviation"].append(std_dev)
     stats_data["Median"].append(median_intensity)
     stats_data["Weighted X"].append(weighted_x)
     stats_data["Weighted Y"].append(weighted_y)
-    stats_data["Min"].append(min)
-    stats_data["Max"].append(max)
+    stats_data["Min"].append(min_temp)
+    stats_data["Max"].append(max_temp)
+
+    midi_out.send(
+        mido.Message(
+            "control_change",
+            control=1,
+            value=int(min(0, max(0, weighted_x)) * 127),
+        )
+    )
+
     stats_time.append(time.time())
 
     for i, line in enumerate(stats_lines):
