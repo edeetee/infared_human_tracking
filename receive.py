@@ -31,7 +31,7 @@ parser.add_argument(
 parser.add_argument(
     "--host",
     help="the hostname of the raspberry pi",
-    default="raspberrypi.local",
+    default="edeetee@raspberrypi.local",
 )
 
 parser.add_argument(
