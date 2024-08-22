@@ -3,6 +3,7 @@ from collections import deque
 import contextlib
 import math
 import os
+import socket
 import subprocess
 from subprocess import Popen, PIPE
 import pickle
@@ -13,6 +14,7 @@ import numpy as np
 import scipy.misc as smp
 from sklearn.preprocessing import normalize
 import mido
+import rtmidi
 
 import matplotlib.pyplot as plt
 
@@ -51,6 +53,7 @@ args = parser.parse_args()
 
 PATH = args.path
 HOST = args.host
+SERVER_PORT = 12345
 
 # sync files in the rpi directory
 print("Syncing files to the raspberry pi")
@@ -63,12 +66,13 @@ if args.install:
     # make sure rpi dependencies are installed
     subprocess.run(["ssh", HOST, f"cd {PATH}; ./setup_rpi.sh"])
 
+
 print("Running the script on the raspberry pi")
 process_on_rpi = subprocess.Popen(
     [
         "ssh",
         HOST,
-        f"cd {PATH}; $HOME/.local/bin/poetry run python3 print_ic2.py",
+        f"cd {PATH}; $HOME/.local/bin/poetry run python3 print_ic2.py --port {SERVER_PORT}",
     ],
     bufsize=0,
     # text=True,
@@ -176,14 +180,26 @@ def normalize(data: np.array) -> np.array:
     return data / np.sqrt(np.sum(data**2))
 
 
+sock = socket.socket()
+sock.connect((HOST, SERVER_PORT))
+
+# server_sock.bind(("0.0.0.0", SERVER_PORT))
+
 # os.set_blocking(p.stdout.fileno(), False)  # That's what you are looking for
-output_names = mido.get_output_names()
-midi_out = mido.open_output(output_names[0])
+# output_names = mido.get_output_names()
+
+# midiout = rtmidi.MidiOut()
+# outputs = midiout.get_ports()
+
+# midi_out = mido.open_output(output_names[0])
 
 print("Starting to read the output")
+
 d = b""
 while True:
-    l = process_on_rpi.stdout.readline().decode("utf-8")
+    data = sock.recv(1024)
+    l = data.decode("utf-8")
+    # l = process_on_rpi.stdout.readline().decode("utf-8")
 
     try:
         data = json.loads(l)
@@ -230,13 +246,13 @@ while True:
 
     n_x = normalize(np.array(stats_data["Weighted X"]))[-1]
 
-    midi_out.send(
-        mido.Message(
-            "control_change",
-            control=1,
-            value=int(max(0, min(1, n_x)) * 127),
-        )
-    )
+    # midi_out.send(
+    #     mido.Message(
+    #         "control_change",
+    #         control=1,
+    #         value=int(max(0, min(1, n_x)) * 127),
+    #     )
+    # )
 
     stats_time.append(time.time())
 
