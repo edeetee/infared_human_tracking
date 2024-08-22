@@ -7,8 +7,9 @@ import subprocess
 from subprocess import Popen, PIPE
 import pickle
 import json
-from threading import Thread
 import time
+
+# from time import time as get_time
 from matplotlib.lines import Line2D
 import numpy as np
 import scipy.misc as smp
@@ -90,6 +91,16 @@ TRIGGER_TEMP = 15
 TRIGGER_FROM_MEAN = 3
 TRIGGER_FROM_MIN = 3
 MAX_VALUES = 50
+
+# New Constants
+WINDOW_SIZE = 10  # Number of samples to consider for moving average
+HYSTERESIS = 0.05  # Minimum change required to update MIDI value
+SMOOTHING_FACTOR = 0.2  # Exponential smoothing factor (0 to 1)
+
+# Initialize variables
+weighted_x_history = deque(maxlen=WINDOW_SIZE)
+last_midi_value = 0
+smoothed_value = 0
 
 # Plot the grid using a colormap
 im = grid_ax.imshow(
@@ -173,40 +184,55 @@ def unbuffered(proc: Popen, stream="stdout"):
             yield out
 
 
-def normalize(data: np.array) -> np.array:
-    return data / np.sqrt(np.sum(data**2))
+def get_smooth_midi_value(new_x):
+    global last_midi_value, smoothed_value
+
+    weighted_x_history.append(new_x)
+
+    # Calculate moving average
+    avg_x = sum(weighted_x_history) / len(weighted_x_history)
+
+    # Apply exponential smoothing
+    smoothed_value = (SMOOTHING_FACTOR * avg_x) + (
+        (1 - SMOOTHING_FACTOR) * smoothed_value
+    )
+
+    # Normalize to 0-1 range, handling the case where all values are the same
+    min_x = min(weighted_x_history)
+    max_x = max(weighted_x_history)
+    if max_x == min_x:
+        normalized_value = 0.5  # Default to middle value if all inputs are the same
+    else:
+        normalized_value = (smoothed_value - min_x) / (max_x - min_x)
+
+    # Ensure normalized_value is within [0, 1] range
+    normalized_value = max(0, min(1, normalized_value))
+
+    # Apply hysteresis
+    new_midi_value = int(normalized_value * 127)
+    if abs(new_midi_value - last_midi_value) > (HYSTERESIS * 127):
+        last_midi_value = new_midi_value
+
+    return last_midi_value
 
 
-last_line = ""
-cur_line = ""
-
-
-def threaded_read():
-    global last_line, cur_line
-    while True:
-        l = process_on_rpi.stdout.readline().decode("utf-8")
-        last_line = cur_line
-        cur_line = l
-
-
-thread = Thread(target=threaded_read)
-thread.start()
-
+mido.set_backend("mido.backends.portmidi")
 # os.set_blocking(p.stdout.fileno(), False)  # That's what you are looking for
 output_names = mido.get_output_names()
 midi_out = mido.open_output(output_names[0])
 
 print("Starting to read the output")
 d = b""
+
+# start_time = get_time()
+
 while True:
-    # l = process_on_rpi.stdout.readline().decode("utf-8")
-    l = cur_line
+    l = process_on_rpi.stdout.readline().decode("utf-8")
 
     try:
         data = json.loads(l)
     except:
         print(l)
-        time.sleep(1)
         continue
 
     # print(unpickled)
@@ -246,15 +272,19 @@ while True:
     stats_data["Min"].append(min_temp)
     stats_data["Max"].append(max_temp)
 
-    n_x = normalize(np.array(stats_data["Weighted X"]))[-1]
+    n_x = stats_data["Weighted X"][-1]
+    midi_value = get_smooth_midi_value(n_x)
 
     midi_out.send(
         mido.Message(
             "control_change",
             control=1,
-            value=int(max(0, min(1, n_x)) * 127),
+            value=midi_value,
         )
     )
+
+    print("Raw Weighted X:", n_x)
+    print("Smoothed MIDI value:", midi_value)
 
     stats_time.append(time.time())
 
@@ -277,4 +307,4 @@ while True:
     plt.draw()
     fig.canvas.flush_events()
 
-# thread.join()
+    # plt.pause(0.01)  # Add a small pause to allow time for plot updating
