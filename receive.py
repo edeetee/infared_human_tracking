@@ -7,6 +7,7 @@ import subprocess
 from subprocess import Popen, PIPE
 import pickle
 import json
+from threading import Thread
 import time
 
 # from time import time as get_time
@@ -224,15 +225,40 @@ midi_out = mido.open_output(output_names[0])
 print("Starting to read the output")
 d = b""
 
+
+cur_line = ""
+
+
+def threaded_read():
+    global cur_line
+    while True:
+        cur_line = process_on_rpi.stdout.readline().decode("utf-8")
+
+
+def mapFromTo(x, a, b, c, d):
+    y = (x - a) / (b - a) * (d - c) + c
+    return max(c, min(d, y))
+
+
+thread = Thread(target=threaded_read)
+thread.start()
+
 # start_time = get_time()
+last_processed_line = ""
 
 while True:
-    l = process_on_rpi.stdout.readline().decode("utf-8")
+    if last_processed_line == cur_line:
+        time.sleep(1 / 60)
+        continue
+
+    l = cur_line
+    last_processed_line = l
 
     try:
         data = json.loads(l)
     except:
         print(l)
+        time.sleep(1)
         continue
 
     # print(unpickled)
@@ -274,6 +300,7 @@ while True:
 
     n_x = stats_data["Weighted X"][-1]
     midi_value = get_smooth_midi_value(n_x)
+    human_detected = mapFromTo(max_temp, 5.0, 7.0, 0, 1)
 
     midi_out.send(
         mido.Message(
@@ -283,8 +310,17 @@ while True:
         )
     )
 
+    midi_out.send(
+        mido.Message(
+            "control_change",
+            control=2,
+            value=int(human_detected * 127),
+        )
+    )
+
     print("Raw Weighted X:", n_x)
     print("Smoothed MIDI value:", midi_value)
+    print(f"Human {human_detected}")
 
     stats_time.append(time.time())
 
