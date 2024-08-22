@@ -300,7 +300,7 @@ while True:
 
     n_x = stats_data["Weighted X"][-1]
     midi_value = get_smooth_midi_value(n_x)
-    human_detected = mapFromTo(max_temp, 5.0, 7.0, 0, 1)
+    human_detected = mapFromTo(max_temp, 7.0, 9.0, 0, 1)
 
     midi_out.send(
         mido.Message(
