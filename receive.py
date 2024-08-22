@@ -7,6 +7,7 @@ import subprocess
 from subprocess import Popen, PIPE
 import pickle
 import json
+from threading import Thread
 import time
 from matplotlib.lines import Line2D
 import numpy as np
@@ -176,6 +177,21 @@ def normalize(data: np.array) -> np.array:
     return data / np.sqrt(np.sum(data**2))
 
 
+last_line = ""
+cur_line = ""
+
+
+def threaded_read():
+    global last_line, cur_line
+    while True:
+        l = process_on_rpi.stdout.readline().decode("utf-8")
+        last_line = cur_line
+        cur_line = l
+
+
+thread = Thread(target=threaded_read)
+thread.start()
+
 # os.set_blocking(p.stdout.fileno(), False)  # That's what you are looking for
 output_names = mido.get_output_names()
 midi_out = mido.open_output(output_names[0])
@@ -183,12 +199,14 @@ midi_out = mido.open_output(output_names[0])
 print("Starting to read the output")
 d = b""
 while True:
-    l = process_on_rpi.stdout.readline().decode("utf-8")
+    # l = process_on_rpi.stdout.readline().decode("utf-8")
+    l = cur_line
 
     try:
         data = json.loads(l)
     except:
         print(l)
+        time.sleep(1)
         continue
 
     # print(unpickled)
@@ -258,3 +276,5 @@ while True:
     fig.canvas.draw()
     plt.draw()
     fig.canvas.flush_events()
+
+# thread.join()
