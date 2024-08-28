@@ -8,6 +8,11 @@
   - Double click on the IAC Driver
   - Check the "Device is online" checkbox
 
+### Windows
+
+- Install loopMidi https://www.tobias-erichsen.de/software/loopmidi.html
+- Make a loopback port
+
 ## Running
 
 - Make sure the RPI is connected to the same network as the host machine
