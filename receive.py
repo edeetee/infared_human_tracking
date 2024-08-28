@@ -9,6 +9,7 @@ import pickle
 import json
 from threading import Thread
 import time
+import random
 
 # from time import time as get_time
 from matplotlib.lines import Line2D
@@ -334,6 +335,18 @@ while True:
             value=int(human_detected * 127),
         )
     )
+
+    if random.random() < 0.1:  # 10% chance to send trigger
+        note = 60  # MIDI note number for C3
+        velocity = random.randint(64, 127)  # Random velocity between 64 and 127
+
+        midi_out.send(mido.Message("note_on", note=note, velocity=velocity))
+        print(f"Note On: C3 (note {note}) with velocity {velocity}")
+
+        time.sleep(0.05)  # Hold the note for 100ms
+
+        midi_out.send(mido.Message("note_off", note=note))
+        print(f"Note Off: C3 (note {note})")
 
     print("Raw Weighted X:", n_x)
     print("Smoothed MIDI value:", midi_value)
