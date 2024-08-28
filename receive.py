@@ -55,10 +55,21 @@ args = parser.parse_args()
 PATH = args.path
 HOST = args.host
 
+on_windows = os.name == "nt"
+
 # sync files in the rpi directory
 print("Syncing files to the raspberry pi")
 subprocess.run(
-    ["rsync", "-avz", "--delete", "--exclude", "__pycache__", "rpi/", f"{HOST}:{PATH}"]
+    (["wsl"] if on_windows else [])
+    + [
+        "rsync",
+        "-avz",
+        "--delete",
+        "--exclude",
+        "__pycache__",
+        "rpi/",
+        f"{HOST}:{PATH}",
+    ]
 )
 
 if args.install:
@@ -217,10 +228,16 @@ def get_smooth_midi_value(new_x):
     return last_midi_value
 
 
-mido.set_backend("mido.backends.portmidi")
-# os.set_blocking(p.stdout.fileno(), False)  # That's what you are looking for
-output_names = mido.get_output_names()
-midi_out = mido.open_output(output_names[0])
+if on_windows:
+    output_names = mido.get_output_names()
+    print("Output names:", output_names)
+    midi_out = mido.open_output(output_names[1])
+else:
+    mido.set_backend("mido.backends.portmidi")
+    # os.set_blocking(p.stdout.fileno(), False)  # That's what you are looking for
+    output_names = mido.get_output_names()
+    print("Output names:", output_names)
+    midi_out = mido.open_output(output_names[1])
 
 print("Starting to read the output")
 d = b""
