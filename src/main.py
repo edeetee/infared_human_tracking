@@ -66,6 +66,10 @@ midi = MidiController()
 while True:
 
     grid = rpi_comm.get_grid()
+
+    if grid is None:
+        continue
+
     stats.process_frame(grid)
     midi.process_frame(stats)
     graph.process_frame(grid, stats)

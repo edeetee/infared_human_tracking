@@ -63,7 +63,7 @@ class RpiCommController:
         thread.start()
 
     def get_grid(self, print_output=False):
-        l = self.get_line()
+        l = self.get_new_line()
 
         if l is None:
             return None
@@ -89,7 +89,7 @@ class RpiCommController:
         return grid
 
     # line if new line, else None
-    def get_line(self):
+    def get_new_line(self):
         if self.last_processed_line == self.cur_line:
             time.sleep(1 / 60)
             return None

@@ -6,13 +6,14 @@ import stats
 
 
 class GraphController:
+    stats_ax: plt.Axes
+    grid_ax: plt.Axes
+
     def __init__(self):
         # Create a figure and axis
         plt.ion()
-        stats_ax: plt.Axes
-        grid_ax: plt.Axes
-        fig, (grid_ax, stats_ax) = plt.subplots(1, 2)
-        fig.canvas.mpl_connect(
+        self.fig, (self.grid_ax, self.stats_ax) = plt.subplots(1, 2)
+        self.fig.canvas.mpl_connect(
             "close_event", lambda x: exit(0)
         )  # listen to close event
 
@@ -21,27 +22,27 @@ class GraphController:
         smoothed_value = 0
 
         # Plot the grid using a colormap
-        self.im = grid_ax.imshow(
+        self.im = self.grid_ax.imshow(
             [[0]],
             cmap="hot",
             vmin=stats.MIN_TEMP,
             vmax=stats.MAX_TEMP,
             interpolation="bicubic",
         )
-        im2 = grid_ax.imshow([[0]], interpolation="nearest")
+        im2 = self.grid_ax.imshow([[0]], interpolation="nearest")
 
         # Add a colorbar
-        cbar = grid_ax.figure.colorbar(self.im, ax=grid_ax)
+        cbar = self.grid_ax.figure.colorbar(self.im, ax=self.grid_ax)
 
         self.stats_lines: list[Line2D] = []
         for i in range(len(stats.stats_labels)):
-            (line,) = stats_ax.plot([], [], label=stats.stats_labels[i])
+            (line,) = self.stats_ax.plot([], [], label=stats.stats_labels[i])
             self.stats_lines.append(line)
 
-        stats_ax.set_title("Stats")
-        stats_ax.set_xlabel("Time")
-        stats_ax.set_ylabel("Normalized Value")
-        stats_ax.legend()
+        self.stats_ax.set_title("Stats")
+        self.stats_ax.set_xlabel("Time")
+        self.stats_ax.set_ylabel("Normalized Value")
+        self.stats_ax.legend()
 
     def process_frame(self, grid: np.NDArray[float], stats_ctlr: stats.StatsController):
 
@@ -64,10 +65,10 @@ class GraphController:
             line.set_xdata(stats_ctlr.stats_time)
             line.set_ydata(data)
 
-        stats_ax.relim()
-        stats_ax.autoscale_view()
+        self.stats_ax.relim()
+        self.stats_ax.autoscale_view()
 
         # Show the plot
-        fig.canvas.draw()
+        self.fig.canvas.draw()
         plt.draw()
-        fig.canvas.flush_events()
+        self.fig.canvas.flush_events()
