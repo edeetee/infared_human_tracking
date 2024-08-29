@@ -1,9 +1,12 @@
 import argparse
 import contextlib
+import json
 import os
 import subprocess
 from threading import Thread
 import time
+
+import numpy as np
 
 
 # start_time = get_time()
@@ -58,6 +61,32 @@ class RpiCommController:
         print("Starting to read the output")
         thread = Thread(target=threaded_read)
         thread.start()
+
+    def get_grid(self, print_output=False):
+        l = self.get_line()
+
+        if l is None:
+            return None
+
+        try:
+            data = json.loads(l)
+        except:
+            print(l)
+            time.sleep(1)
+            return None
+
+        # print(unpickled)
+        if print_output:
+            for row in data:
+                for cell in row:
+                    print(f"{cell:.0f}", end=" ")
+                print()
+            print()
+
+        grid = np.array(data)
+        grid = np.rot90(grid, -1)
+
+        return grid
 
     # line if new line, else None
     def get_line(self):
