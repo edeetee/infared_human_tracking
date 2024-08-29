@@ -5,15 +5,14 @@ import time
 import mido
 
 from src.stats import StatsController
-import src.stats as stats
-
-
-weighted_x_history = deque(maxlen=stats.WINDOW_SIZE)
 
 # Smoothing constraig
 WINDOW_SIZE = 10  # Number of samples to consider for moving average
 HYSTERESIS = 0.05  # Minimum change required to update MIDI value
 SMOOTHING_FACTOR = 0.2  # Exponential smoothing factor (0 to 1)
+
+
+weighted_x_history = deque(maxlen=WINDOW_SIZE)
 
 
 def get_smooth_midi_value(new_x):

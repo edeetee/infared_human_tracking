@@ -29,7 +29,7 @@ class StatsController:
         # }
         self.stats_time = []
 
-    def process_frame(self, grid: np.NDArray[float]):
+    def process_frame(self, grid: np.ndarray[float]):
         self.mean_intensity = np.mean(grid)
         self.std_dev = np.std(grid)
         self.median_intensity = np.median(grid)

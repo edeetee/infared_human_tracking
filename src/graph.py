@@ -2,7 +2,7 @@ from collections import deque
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 import numpy as np
-import src.stats
+import src.stats as stats
 
 
 class GraphController:
@@ -44,7 +44,7 @@ class GraphController:
         self.stats_ax.set_ylabel("Normalized Value")
         self.stats_ax.legend()
 
-    def process_frame(self, grid: np.NDArray[float], stats_ctlr: stats.StatsController):
+    def process_frame(self, grid: np.ndarray[float], stats_ctlr: stats.StatsController):
 
         # data_above_range = grid > (min + TRIGGER_FROM_MIN)
         self.im.set_data(grid)
