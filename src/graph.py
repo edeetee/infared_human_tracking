@@ -49,7 +49,7 @@ class GraphController:
         # data_above_range = grid > (min + TRIGGER_FROM_MIN)
         self.im.set_data(grid)
 
-        data_above_range = grid > (stats.mean_intensity + stats.TRIGGER_FROM_MEAN)
+        data_above_range = grid > (stats_ctlr.mean_intensity + stats.TRIGGER_FROM_MEAN)
 
         # VISUALISATION \/ \/
 
