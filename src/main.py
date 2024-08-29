@@ -1,30 +1,8 @@
-import codecs
-from collections import deque
-import contextlib
-import math
-import os
-import subprocess
-from subprocess import Popen, PIPE
-import pickle
-import json
-from threading import Thread
-import time
-import random
-
-# from time import time as get_time
-from matplotlib.lines import Line2D
-import numpy as np
-import scipy.misc as smp
-from sklearn.preprocessing import normalize
-import mido
-
-import matplotlib.pyplot as plt
-
 import argparse
 
 from src.graph import GraphController
 from src.midi import MidiController
-from src.rpi_comm import RpiCommController
+from rpi import RpiController
 from src.stats import StatsController
 
 # from PIL import Image
@@ -68,8 +46,8 @@ PATH = args.path
 IR_HOST = args.ir_host
 PIR_HOST = args.pir_host
 
-rpi_comm_ir = RpiCommController(IR_HOST, PATH, args.install)
-rpi_comm_pir = RpiCommController(PIR_HOST, PATH, args.install)
+rpi_comm_ir = RpiController(IR_HOST, PATH, args.install)
+rpi_comm_pir = RpiController(PIR_HOST, PATH, args.install)
 
 graph = GraphController()
 stats = StatsController()

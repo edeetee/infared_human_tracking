@@ -5,14 +5,10 @@ import os
 import subprocess
 from threading import Thread
 import time
-
 import numpy as np
 
 
-# start_time = get_time()
-
-
-class RpiCommController:
+class RpiController:
     def __init__(self, HOST: str, PATH: str, install: bool):
         on_windows = os.name == "nt"
 
