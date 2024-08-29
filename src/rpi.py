@@ -45,7 +45,7 @@ class RpiController:
         )
 
         self.cur_line = ""
-        self.las_processed_line = self.cur_line
+        self.last_processed_line = self.cur_line
 
         def threaded_read():
             while True:
