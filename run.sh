@@ -1,1 +1,1 @@
-poetry run python receive.py
+poetry run python src/main.py
