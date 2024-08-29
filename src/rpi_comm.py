@@ -13,11 +13,8 @@ import numpy as np
 
 
 class RpiCommController:
-    def __init__(self, args: argparse.Namespace):
+    def __init__(self, HOST: str, PATH: str, install: bool):
         on_windows = os.name == "nt"
-
-        PATH = args.path
-        HOST = args.host
 
         # sync files in the rpi directory
         print("Syncing files to the raspberry pi")
@@ -34,7 +31,7 @@ class RpiCommController:
             ]
         )
 
-        if args.install:
+        if install:
             print("Installing dependencies on the raspberry pi")
             # make sure rpi dependencies are installed
             subprocess.run(["ssh", HOST, f"cd {PATH}; ./setup_rpi.sh"])
@@ -62,7 +59,24 @@ class RpiCommController:
         thread = Thread(target=threaded_read)
         thread.start()
 
-    def get_grid(self, print_output=False):
+    def get_motion_array(self) -> np.ndarray[bool]:
+        l = self.get_new_line()
+
+        if l is None:
+            return None
+
+        try:
+            data = json.loads(l)
+        except:
+            print(l)
+            time.sleep(1)
+            return None
+
+        # print(unpickled)
+        grid = np.array(data)
+        return grid
+
+    def get_ir_grid(self, print_output=False) -> None | np.ndarray[float]:
         l = self.get_new_line()
 
         if l is None:
