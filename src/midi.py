@@ -4,8 +4,8 @@ import random
 import time
 import mido
 
-from stats import StatsController
-import stats
+from src.stats import StatsController
+import src.stats as stats
 
 
 weighted_x_history = deque(maxlen=stats.WINDOW_SIZE)

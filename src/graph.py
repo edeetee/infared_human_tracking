@@ -2,7 +2,7 @@ from collections import deque
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 import numpy as np
-import stats
+import src.stats
 
 
 class GraphController:

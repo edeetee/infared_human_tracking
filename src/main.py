@@ -2,7 +2,7 @@ import argparse
 
 from src.graph import GraphController
 from src.midi import MidiController
-from rpi import RpiController
+from src.rpi import RpiController
 from src.stats import StatsController
 
 # from PIL import Image
