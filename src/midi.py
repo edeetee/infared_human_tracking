@@ -13,6 +13,7 @@ SMOOTHING_FACTOR = 0.2  # Exponential smoothing factor (0 to 1)
 
 
 weighted_x_history = deque(maxlen=WINDOW_SIZE)
+smoothed_value = 0
 
 
 def get_smooth_midi_value(new_x):
