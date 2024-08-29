@@ -7,6 +7,10 @@ import board
 from scipy.interpolate import griddata
 import adafruit_amg88xx
 import json
+from gpiozero import MotionSensor
+
+pir_ports = [4]
+pir_sensors = [MotionSensor(i) for i in pir_ports]
 
 i2c_bus = busio.I2C(board.SCL, board.SDA)
 
@@ -25,4 +29,6 @@ while True:
     print(
         pickled, flush=True
     )  # flush to make sure it's printed immediately, even in non-interactive mode
+    # pir.is_active
+
     time.sleep(PERIOD)
