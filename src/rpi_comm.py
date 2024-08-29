@@ -1,4 +1,5 @@
 import argparse
+import contextlib
 import os
 import subprocess
 from threading import Thread
@@ -72,7 +73,7 @@ class RpiCommController:
 newlines = ["\n", "\r\n", "\r"]
 
 
-def unbuffered(proc: Popen, stream="stdout"):
+def unbuffered(proc: subprocess.Popen, stream="stdout"):
     stream = getattr(proc, stream)
     with contextlib.closing(stream):
         while True:

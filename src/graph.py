@@ -17,7 +17,6 @@ class GraphController:
         )  # listen to close event
 
         # Initialize variables
-        weighted_x_history = deque(maxlen=stats.WINDOW_SIZE)
         last_midi_value = 0
         smoothed_value = 0
 

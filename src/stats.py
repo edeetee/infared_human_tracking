@@ -1,3 +1,4 @@
+from collections import deque
 import time
 import numpy as np
 
@@ -19,15 +20,13 @@ TRIGGER_FROM_MEAN = 3
 TRIGGER_FROM_MIN = 3
 MAX_VALUES = 50
 
-# New Constants
-WINDOW_SIZE = 10  # Number of samples to consider for moving average
-HYSTERESIS = 0.05  # Minimum change required to update MIDI value
-SMOOTHING_FACTOR = 0.2  # Exponential smoothing factor (0 to 1)
-
 
 class StatsController:
     def __init__(self):
         self.stats_data = {label: [] for label in stats_labels}
+        # self.smoothing_data = {
+        #     label: deque(maxlen=WINDOW_SIZE) for label in stats_labels
+        # }
         self.stats_time = []
 
     def process_frame(self, grid: np.NDArray[float]):
@@ -45,6 +44,9 @@ class StatsController:
         self.stats_data["Weighted Y"].append(self.weighted_y)
         self.stats_data["Min"].append(self.min_temp)
         self.stats_data["Max"].append(self.max_temp)
+
+        # for label in stats_labels:
+        #     self.smoothing_data[label].append(self.stats_data[label][-1])
 
         self.stats_time.append(time.time())
 

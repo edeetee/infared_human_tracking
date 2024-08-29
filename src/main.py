@@ -64,6 +64,15 @@ graph = GraphController()
 stats = StatsController()
 
 
+weighted_x_history = deque(maxlen=stats.WINDOW_SIZE)
+
+
+# Smoothing constraig
+WINDOW_SIZE = 10  # Number of samples to consider for moving average
+HYSTERESIS = 0.05  # Minimum change required to update MIDI value
+SMOOTHING_FACTOR = 0.2  # Exponential smoothing factor (0 to 1)
+
+
 def get_smooth_midi_value(new_x):
     global last_midi_value, smoothed_value
 
@@ -103,8 +112,6 @@ def mapFromTo(x, a, b, c, d):
     y = (x - a) / (b - a) * (d - c) + c
     return max(c, min(d, y))
 
-
-last_processed_line = ""
 
 while True:
 
