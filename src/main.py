@@ -47,7 +47,7 @@ IR_HOST = args.ir_host
 PIR_HOST = args.pir_host
 
 rpi_comm_ir = RpiController(IR_HOST, PATH, args.install)
-rpi_comm_pir = RpiController(PIR_HOST, PATH, args.install)
+# rpi_comm_pir = RpiController(PIR_HOST, PATH, args.install)
 
 graph = GraphController()
 stats = StatsController()
@@ -57,7 +57,7 @@ midi = MidiController()
 while True:
 
     grid = rpi_comm_ir.get_ir_grid()
-    pir_array = rpi_comm_pir.get_motion_array()
+    # pir_array = rpi_comm_pir.get_motion_array()
 
     if grid is None:
         continue
