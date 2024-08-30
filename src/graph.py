@@ -29,10 +29,10 @@ class GraphController:
             vmax=stats.MAX_TEMP,
             interpolation="bicubic",
         )
-        im2 = self.grid_ax.imshow([[0]], interpolation="nearest")
+        self.im2 = self.grid_ax.imshow([[0]], interpolation="nearest")
 
         # Add a colorbar
-        cbar = self.grid_ax.figure.colorbar(self.im, ax=self.grid_ax)
+        self.cbar = self.grid_ax.figure.colorbar(self.im, ax=self.grid_ax)
 
         self.stats_lines: list[Line2D] = []
         for i in range(len(stats.stats_labels)):

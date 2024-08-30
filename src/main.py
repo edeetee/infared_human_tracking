@@ -30,7 +30,7 @@ parser.add_argument(
 parser.add_argument(
     "--path",
     help="the path on the raspberry pi",
-    default="$HOME/rpi",
+    default="/home/edeetee/rpi",
 )
 
 parser.add_argument(

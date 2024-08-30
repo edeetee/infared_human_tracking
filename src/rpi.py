@@ -6,6 +6,8 @@ import subprocess
 from threading import Thread
 import time
 import numpy as np
+import os
+import paramiko
 
 
 class RpiController:
@@ -14,18 +16,44 @@ class RpiController:
 
         # sync files in the rpi directory
         print("Syncing files to the raspberry pi")
+        # subprocess.run(
+        #     (["wsl"] if on_windows else [])
+        #     + [
+        #         "rsync",
+        #         "-avz",
+        #         "--delete",
+        #         "--exclude",
+        #         "__pycache__",
+        #         "rpi/",
+        #         f"{HOST}:{PATH}",
+        #     ]
+        # )
         subprocess.run(
-            (["wsl"] if on_windows else [])
-            + [
-                "rsync",
-                "-avz",
-                "--delete",
-                "--exclude",
-                "__pycache__",
+            [
+                "scp",
+                "-r",
                 "rpi/",
                 f"{HOST}:{PATH}",
             ]
         )
+
+        # set execute permissions of sh files:
+        for file in ["run_rpi.sh", "setup_rpi.sh"]:
+            subprocess.run(
+                [
+                    "ssh",
+                    HOST,
+                    f"cd {PATH}; chmod +x {file}",
+                ]
+            )
+
+        # ssh = paramiko.SSHClient()
+        # ssh.load_host_keys(os.path.expanduser(os.path.join("~", ".ssh", "known_hosts")))
+        # ssh.connect("raspberrypi.local", password="password")
+        # sftp = ssh.open_sftp()
+        # sftp.put("rpi/", PATH)
+        # sftp.close()
+        # ssh.close()
 
         if install:
             print("Installing dependencies on the raspberry pi")

@@ -13,6 +13,10 @@
 - Install loopMidi https://www.tobias-erichsen.de/software/loopmidi.html
 - Make a loopback port
 
+#### ssh on windows
+
+` type $env:USERPROFILE\.ssh\id_rsa.pub | ssh "edeetee@raspberrypi.local" "cat >> .ssh/authorized_keys"`
+
 ## Running
 
 - Make sure the RPI is connected to the same network as the host machine

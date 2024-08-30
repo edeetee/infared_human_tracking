@@ -1,1 +1,1 @@
-poetry run python -m src.main
+poetry run python -m src.main $@
