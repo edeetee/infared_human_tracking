@@ -3,6 +3,7 @@ import os
 import random
 import time
 import mido
+import numpy as np
 
 from src.stats import StatsController
 
@@ -73,7 +74,7 @@ class MidiController:
     def send(self, msg: mido.Message):
         self.midi_out.send(msg)
 
-    def process_frame(self, stats_ctlr: StatsController):
+    def process_frame(self, stats_ctlr: StatsController, pir_array: np.array):
         n_x = stats_ctlr.stats_data["Weighted X"][-1]
         midi_x_value = get_smooth_midi_value(n_x)
         human_detected = mapFromTo(stats_ctlr.max_temp, 7.0, 9.0, 0, 1)
@@ -94,17 +95,26 @@ class MidiController:
             )
         )
 
-        if random.random() < 0.1:  # 10% chance to send trigger
-            note = 60  # MIDI note number for C3
-            velocity = random.randint(64, 127)  # Random velocity between 64 and 127
+        for i, pir in enumerate(pir_array):
+            self.send(
+                mido.Message(
+                    "note_on" if pir else "note_off",
+                    note=60 + i,
+                    # velocity=64,
+                )
+            )
 
-            self.send(mido.Message("note_on", note=note, velocity=velocity))
-            print(f"Note On: C3 (note {note}) with velocity {velocity}")
+        # if random.random() < 0.1:  # 10% chance to send trigger
+        #     note = 60  # MIDI note number for C3
+        #     velocity = random.randint(64, 127)  # Random velocity between 64 and 127
 
-            time.sleep(0.05)  # Hold the note for 100ms
+        #     self.send(mido.Message("note_on", note=note, velocity=velocity))
+        #     print(f"Note On: C3 (note {note}) with velocity {velocity}")
 
-            self.send(mido.Message("note_off", note=note))
-            print(f"Note Off: C3 (note {note})")
+        #     time.sleep(0.05)  # Hold the note for 100ms
+
+        #     self.send(mido.Message("note_off", note=note))
+        #     print(f"Note Off: C3 (note {note})")
 
         print("Raw Weighted X:", n_x)
         print("Smoothed MIDI value:", midi_x_value)

@@ -28,5 +28,5 @@ while True:
     # continue
 
     stats.process_frame(grid)
-    midi.process_frame(stats)
+    midi.process_frame(stats, pir_array)
     graph.process_frame(grid, stats)
