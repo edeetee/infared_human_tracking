@@ -68,7 +68,7 @@ class MidiController:
             # os.set_blocking(p.stdout.fileno(), False)  # That's what you are looking for
             output_names = mido.get_output_names()
             print("Output names:", output_names)
-            self.midi_out = mido.open_output(output_names[1])
+            self.midi_out = mido.open_output(output_names[-1])
 
     def send(self, msg: mido.Message):
         self.midi_out.send(msg)
