@@ -3,7 +3,6 @@ import argparse
 from src.arduino import ArduinoController
 from src.graph import GraphController
 from src.midi import MidiController
-from src.rpi import RpiController
 from src.stats import StatsController
 
 graph = GraphController()

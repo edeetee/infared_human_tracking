@@ -13,7 +13,7 @@ class ArduinoResponse(TypedDict):
 
 on_windows = os.name == "nt"
 
-SERIAL_PORT = "/dev/cu.usbmodem11101"
+SERIAL_PORT = "/dev/cu.usbmodem21101"
 if on_windows:
     SERIAL_PORT = "COM3"
 

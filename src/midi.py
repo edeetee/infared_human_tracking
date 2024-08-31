@@ -116,6 +116,6 @@ class MidiController:
         #     self.send(mido.Message("note_off", note=note))
         #     print(f"Note Off: C3 (note {note})")
 
-        print("Raw Weighted X:", n_x)
-        print("Smoothed MIDI value:", midi_x_value)
-        print(f"Human {human_detected}")
+        # print("Raw Weighted X:", n_x)
+        # print("Smoothed MIDI value:", midi_x_value)
+        # print(f"Human {human_detected}")
