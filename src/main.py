@@ -10,7 +10,6 @@ stats = StatsController()
 midi = MidiController()
 arduino = ArduinoController()
 
-
 while True:
 
     data = arduino.read()
