@@ -33,7 +33,7 @@ class StatsController:
         self.mean_intensity = np.mean(grid)
         self.std_dev = np.std(grid)
         self.median_intensity = np.median(grid)
-        self.weighted_x, self.weighted_y = weighted_center_of_mass(grid)
+        self.weighted_x, self.weighted_y = center_of_mass(grid)
         self.min_temp = np.min(grid)
         self.max_temp = np.max(grid)
 
@@ -56,28 +56,6 @@ class StatsController:
                 self.stats_data[label].pop(0)
 
 
-def weighted_center_of_mass(grid):
-    """Calculates the weighted center of mass of a grid.
-
-    Args:
-      grid: A 2D numpy array representing the grid of values.
-
-    Returns:
-      A tuple representing the x and y coordinates of the center of mass.
-    """
-
-    # Ensure grid is a numpy array
-    grid = np.array(grid)
-
-    # Calculate total weight
-    total_weight = np.sum(grid)
-
-    # Calculate weighted coordinates
-    x_weighted_sum = np.sum(np.multiply(grid, np.arange(grid.shape[1])))
-    y_weighted_sum = np.sum(np.multiply(grid, np.arange(grid.shape[0])[:, np.newaxis]))
-
-    # Calculate center of mass
-    x_center = x_weighted_sum / total_weight
-    y_center = y_weighted_sum / total_weight
-
-    return x_center, y_center
+def center_of_mass(grid):
+    max_pos = np.unravel_index(np.argmax(grid), grid.shape)
+    return max_pos

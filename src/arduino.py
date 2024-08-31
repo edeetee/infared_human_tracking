@@ -21,6 +21,8 @@ BAUD = 1000000
 
 
 class ArduinoController:
+    prev_pir_array = np.zeros(8)
+
     def __init__(self):
         self.arduino = serial.Serial(SERIAL_PORT, BAUD, timeout=1)
         # wait for init
@@ -41,7 +43,14 @@ class ArduinoController:
 
         # print(data)
 
-        pir = np.array(data["pir"])
+        new_pir = np.array(data["pir"])
+
+        pir = np.zeros(len(new_pir))
+
+        for i, pir_val in enumerate(new_pir):
+            prev = self.prev_pir_array[i]
+            self.prev_pir_array[i] = pir_val
+            pir[i] = pir_val and not prev
 
         ir_array = np.array(data["ir"])
         ir_grid = ir_array.reshape((8, 8))

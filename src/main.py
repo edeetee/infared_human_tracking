@@ -5,7 +5,7 @@ from src.graph import GraphController
 from src.midi import MidiController
 from src.stats import StatsController
 
-graph = GraphController()
+# graph = GraphController()
 stats = StatsController()
 midi = MidiController()
 arduino = ArduinoController()
@@ -27,4 +27,4 @@ while True:
 
     stats.process_frame(grid)
     midi.process_frame(stats, pir_array)
-    graph.process_frame(grid, stats)
+    # graph.process_frame(grid, stats)

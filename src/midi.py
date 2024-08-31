@@ -76,8 +76,11 @@ class MidiController:
 
     def process_frame(self, stats_ctlr: StatsController, pir_array: np.array):
         n_x = stats_ctlr.stats_data["Weighted X"][-1]
-        midi_x_value = get_smooth_midi_value(n_x)
-        human_detected = mapFromTo(stats_ctlr.max_temp, 7.0, 9.0, 0, 1)
+        n_y = stats_ctlr.stats_data["Weighted Y"][-1]
+        # midi_x_value = get_smooth_midi_value(n_x)
+        midi_x_value = int(mapFromTo(n_y, 0, 8, 0, 127))
+        # human_detected = mapFromTo(stats_ctlr.max_temp, 7.0, 9.0, 0, 1)
+        human_detected = mapFromTo(stats_ctlr.max_temp, 15, 20, 0, 1)
 
         self.send(
             mido.Message(
@@ -95,11 +98,18 @@ class MidiController:
             )
         )
 
+        note_mappings = {1: 60, 2: 72}
+
         for i, pir in enumerate(pir_array):
+            if i in [0]:
+                continue
+
+            note_value = note_mappings.get(i, 60)
+
             self.send(
                 mido.Message(
                     "note_on" if pir else "note_off",
-                    note=60 + i,
+                    note=note_value,
                     # velocity=64,
                 )
             )
@@ -116,6 +126,6 @@ class MidiController:
         #     self.send(mido.Message("note_off", note=note))
         #     print(f"Note Off: C3 (note {note})")
 
-        # print("Raw Weighted X:", n_x)
-        # print("Smoothed MIDI value:", midi_x_value)
-        # print(f"Human {human_detected}")
+        print("Raw Weighted X:", n_x)
+        print("Smoothed MIDI value:", midi_x_value)
+        print(f"Human {human_detected}")
