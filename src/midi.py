@@ -98,11 +98,11 @@ class MidiController:
             )
         )
 
-        note_mappings = {1: 60, 2: 72}
+        note_mappings = {0: 60, 1: 72, 2: 84}
 
         for i, pir in enumerate(pir_array):
-            if i in [0]:
-                continue
+            # if i in [2, 0]:
+            #     continue
 
             note_value = note_mappings.get(i, 60)
 
